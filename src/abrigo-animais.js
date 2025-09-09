@@ -39,22 +39,36 @@ class AbrigoAnimais {
     const e2 = { lista: p2, adotados: 0, gatosUsados: new Set() };
 
     const saida = [];
+    const locosPendentes = [];
+
     for (const nome of ordem) {
       const a = ANIMAIS[nome];
-      
-      let ok1, ok2;
+
       if (nome === 'Loco') {
-        ok1 = possuiTodos(a.brinquedos, e1.lista) && e1.adotados > 0 && e1.adotados < 3;
-        ok2 = possuiTodos(a.brinquedos, e2.lista) && e2.adotados > 0 && e2.adotados < 3;
-      } else {
-        ok1 = this.podeAdotarNaoLoco(a, e1);
-        ok2 = this.podeAdotarNaoLoco(a, e2);
+        locosPendentes.push(nome); 
+        continue; 
       }
+
+      const ok1 = this.podeAdotarNaoLoco(a, e1);
+      const ok2 = this.podeAdotarNaoLoco(a, e2);
 
       let destino = 'abrigo';
       if (ok1 && ok2) destino = 'abrigo';
-      else if (ok1) { destino = 'pessoa 1'; if (nome !== 'Loco') this.efetivaAdocao(a, e1); else e1.adotados++; }
-      else if (ok2) { destino = 'pessoa 2'; if (nome !== 'Loco') this.efetivaAdocao(a, e2); else e2.adotados++; }
+      else if (ok1) { destino = 'pessoa 1'; this.efetivaAdocao(a, e1); }
+      else if (ok2) { destino = 'pessoa 2'; this.efetivaAdocao(a, e2); }
+
+      saida.push({ nome, destino });
+    }
+
+    for (const nome of locosPendentes) {
+      const a = ANIMAIS[nome];
+      const p1Ok = possuiTodos(a.brinquedos, e1.lista) && e1.adotados > 0 && e1.adotados < 3;
+      const p2Ok = possuiTodos(a.brinquedos, e2.lista) && e2.adotados > 0 && e2.adotados < 3;
+
+      let destino = 'abrigo';
+      if (p1Ok && p2Ok) destino = 'abrigo';
+      else if (p1Ok) { destino = 'pessoa 1'; e1.adotados += 1; }
+      else if (p2Ok) { destino = 'pessoa 2'; e2.adotados += 1; }
 
       saida.push({ nome, destino });
     }
@@ -62,6 +76,8 @@ class AbrigoAnimais {
     saida.sort((a, b) => a.nome.localeCompare(b.nome));
     return { lista: saida.map(x => `${x.nome} - ${x.destino}`) };
   }
+
+    
 
   podeAdotarNaoLoco(animal, estado) {
     if (estado.adotados >= 3) return false;
