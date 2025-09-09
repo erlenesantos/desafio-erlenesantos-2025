@@ -18,6 +18,10 @@ function ehSubsequencia(needle, haystack) {
   return i === needle.length;
 }
 
+function possuiTodos(itens, arr) { 
+  return itens.every(t => arr.includes(t)); 
+}
+
 class AbrigoAnimais {
   encontraPessoas(brinquedosPessoa1, brinquedosPessoa2, ordemAnimais) {
     const p1 = this.parseBrinquedos(brinquedosPessoa1);
@@ -37,13 +41,20 @@ class AbrigoAnimais {
     const saida = [];
     for (const nome of ordem) {
       const a = ANIMAIS[nome];
-      const ok1 = this.podeAdotarNaoLoco(a, e1);
-      const ok2 = this.podeAdotarNaoLoco(a, e2);
+      
+      let ok1, ok2;
+      if (nome === 'Loco') {
+        ok1 = possuiTodos(a.brinquedos, e1.lista) && e1.adotados > 0 && e1.adotados < 3;
+        ok2 = possuiTodos(a.brinquedos, e2.lista) && e2.adotados > 0 && e2.adotados < 3;
+      } else {
+        ok1 = this.podeAdotarNaoLoco(a, e1);
+        ok2 = this.podeAdotarNaoLoco(a, e2);
+      }
 
       let destino = 'abrigo';
       if (ok1 && ok2) destino = 'abrigo';
-      else if (ok1) { destino = 'pessoa 1'; this.efetivaAdocao(a, e1); }
-      else if (ok2) { destino = 'pessoa 2'; this.efetivaAdocao(a, e2); }
+      else if (ok1) { destino = 'pessoa 1'; if (nome !== 'Loco') this.efetivaAdocao(a, e1); else e1.adotados++; }
+      else if (ok2) { destino = 'pessoa 2'; if (nome !== 'Loco') this.efetivaAdocao(a, e2); else e2.adotados++; }
 
       saida.push({ nome, destino });
     }
